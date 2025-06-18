@@ -63,6 +63,9 @@ make install
 status_stage3 'Install the kernel'
 eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v6 linux-headers-rpi-v6 brcmfmac-nexmon-dkms pi-bluetooth
 
+status_stage3 'Modify update-initramfs.conf to regenerate all initramfs'
+sed -i -e 's/=yes/=all/g' /etc/initramfs-tools/update-initramfs.conf
+
 status_stage3 'Enable hciuart and bluetooth'
 systemctl enable hciuart
 systemctl enable bluetooth

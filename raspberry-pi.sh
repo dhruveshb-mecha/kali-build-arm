@@ -48,6 +48,9 @@ else
 eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v7 linux-image-rpi-v7l linux-headers-rpi-v7 linux-headers-rpi-v7l brcmfmac-nexmon-dkms pi-bluetooth
 fi
 
+status_stage3 'Modify update-initramfs.conf to regenerate all initramfs'
+sed -i -e 's/=yes/=all/g' /etc/initramfs-tools/update-initramfs.conf
+
 status_stage3 'Create symlink for Raspberry Pi 4 Compute Module'
 pushd /lib/firmware/brcm/ > /dev/null
 ln -s ./brcmfmac43455-sdio.raspberrypi,4-model-b.txt ./brcmfmac43455-sdio.raspberrypi,4-compute-module.txt

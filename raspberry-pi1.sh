@@ -63,6 +63,9 @@ make install
 status_stage3 'Install the kernel'
 eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v6 linux-headers-rpi-v6 brcmfmac-nexmon-dkms pi-bluetooth
 
+status_stage3 'Modify update-initramfs.conf to regenerate all initramfs'
+sed -i -e 's/=yes/=all/g' /etc/initramfs-tools/update-initramfs.conf
+
 status_stage3 'Set up cloud-init'
 install -m644 /bsp/cloudinit/user-data /boot/firmware
 install -m644 /bsp/cloudinit/meta-data /boot/firmware

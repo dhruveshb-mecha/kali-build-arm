@@ -110,6 +110,9 @@ else
 eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v6 linux-headers-rpi-v6 brcmfmac-nexmon-dkms pi-bluetooth
 fi
 
+status_stage3 'Modify update-initramfs.conf to regenerate all initramfs'
+sed -i -e 's/=yes/=all/g' /etc/initramfs-tools/update-initramfs.conf
+
 status_stage3 'Copy script for handling wpa_supplicant file'
 install -m755 /bsp/scripts/copy-user-wpasupplicant.sh /usr/bin/
 
