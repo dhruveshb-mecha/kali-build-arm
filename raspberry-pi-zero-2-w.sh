@@ -61,7 +61,7 @@ make
 make install
 
 status_stage3 'Install kernel'
-eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v7 linux-image-rpi-v7l linux-headers-rpi-v7 linux-headers-rpi-v7l brcmfmac-nexmon-dkms pi-bluetooth firwmare-nexmon
+eatmydata apt-get -y -q install raspi-firmware linux-image-rpi-v7 linux-image-rpi-v7l linux-headers-rpi-v7 linux-headers-rpi-v7l brcmfmac-nexmon-dkms pi-bluetooth firmware-nexmon
 
 status_stage3 'Modify update-initramfs.conf to regenerate all initramfs'
 sed -i -e 's/=yes/=all/g' /etc/initramfs-tools/update-initramfs.conf
