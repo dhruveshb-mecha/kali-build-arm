@@ -98,7 +98,7 @@ status_stage3 'Build RaspberryPi utils'
 git clone --quiet https://github.com/raspberrypi/utils /usr/src/utils
 cd /usr/src/utils/
 # Without gcc/make, this will fail on slim images.
-apt-get install -y cmake device-tree-compiler libfdt-dev build-essential libgnutls28-dev
+apt-get install -y cmake device-tree-compiler libfdt-dev build-essential
 cmake .
 make
 make install
