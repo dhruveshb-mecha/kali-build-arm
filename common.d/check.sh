@@ -18,8 +18,8 @@ if [ ! -e /usr/bin/systemd-nspawn ]; then
 
 fi
 
-# Check for qemu-user-static
-if [ ! -e /usr/bin/qemu-aarch64-static ]; then
+# Check for qemu-user
+if [ ! -e /usr/bin/qemu-aarch64 ]; then
     log "Error: missing QEMU" red
     log "Please run ./commond.d/build_deps.sh" red
 
