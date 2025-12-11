@@ -136,6 +136,16 @@ apt-wait update
 # Install dependencies
 apt-wait install_deps
 
+DEB_VERSION=$(grep -oP 'VERSION_ID="\K[0-9]+' /etc/os-release 2>/dev/null)
+if [ -z "${DEB_VERSION}" ]; then
+    echo "[-] Unable to detect Debian version"
+    exit 1
+elif [ "${DEB_VERSION}" -le 12 ]; then
+    echo "[i] Debian ${DEB_VERSION} detected"
+    deps="qemu-user-static"
+    apt-wait install_deps
+fi
+
 # Check minimum version debootstrap
 debootstrap_ver=$(debootstrap --version | grep -o '[0-9.]\+' | head -1)
 
