@@ -17,7 +17,7 @@ work_dir="${base_dir}/working"
 image_dir="${repo_dir}/images"
 
 # Version Kali release
-version=${version:-$(cat ${repo_dir}/.release)}
+version=${version:-rolling}
 
 # Custom image file name variable - MUST NOT include .img at the end
 image_name=${image_name:-"kali-linux-${version}-${hw_model}-${variant}"}

@@ -1,5 +1,5 @@
 # Version Kali release
-#version=${version:-$(cat .release)}
+#version=${version:-rolling}
 
 # Custom hostname variable
 #hostname=kali
