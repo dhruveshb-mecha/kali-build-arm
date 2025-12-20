@@ -9,16 +9,18 @@
 # This should be run after images are created.
 #
 # It parses the YAML sections of the devices.yml and creates:
-# - "<imagedir>/rpi-imager.json = "manifest file mapping image name to display name
+#   - "<imagedir>/rpi-imager.json = "manifest file mapping image name to display name
 #
 # Dependencies:
-# sudo apt -y install python3 python3-yaml xz-utils
+#   $ sudo apt -y install python3 python3-yaml xz-utils
+#   ...OR...
+#   $ python3 -m venv .env; source .env/bin/activate; python3 -m pip install pyyaml
 #
 # Usage:
-# ./bin/post-release.py -i <input file> -r <release> -o <image directory>
+#   $ ./bin/post-release.py -i <input file> -r <release> -o <image directory>
 #
 # E.g.:
-# ./bin/post-release.py -i devices.yml -r 2022.3 -o images/
+#   $ ./bin/post-release.py -i devices.yml -r 2022.3 -o images/
 
 import datetime
 import getopt
