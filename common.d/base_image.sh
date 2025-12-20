@@ -155,6 +155,9 @@ if [[ ${architecture} != armel ]]; then
     curl -L -o /tmp/powershell.tar.gz https://github.com/PowerShell/PowerShell/releases/download/v7.5.1/powershell-7.5.1-linux-arm32.tar.gz
 
   fi
+    ls -lh /tmp/powershell.tar.gz
+    file /tmp/powershell.tar.gz
+    md5sum /tmp/powershell.tar.gz
     mkdir -p /opt/microsoft/powershell/7
     tar -xf  /tmp/powershell.tar.gz -C /opt/microsoft/powershell/7
     chmod +x /opt/microsoft/powershell/7/pwsh
