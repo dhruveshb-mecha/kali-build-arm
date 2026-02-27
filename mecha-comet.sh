@@ -5,6 +5,10 @@
 
 set -e
 
+# Workaround for mmdebstrap issues in some Docker environments
+# Switch to debootstrap which is more stable in restricted containers
+export FORCE_DEBOOTSTRAP=1
+
 # Hardware model
 hw_model=${hw_model:-"mecha-comet"}
 

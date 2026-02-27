@@ -243,10 +243,15 @@ function chroot_exec() {
 function debootstrap_exec() {
     status "debootstrap ${suite} $*"
 
-    if [ "$(lsb_release -sc)" == "bullseye" ]; then
+    log "FORCE_DEBOOTSTRAP: [${FORCE_DEBOOTSTRAP}]" yellow
+    log "LSB RELEASE: [$(lsb_release -sc)]" yellow
+
+    if [ "$FORCE_DEBOOTSTRAP" == "1" ] || [ "$(lsb_release -sc)" == "bullseye" ]; then
+    log "Using debootstrap..." green
     eatmydata debootstrap --merged-usr --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
         --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
     else
+    log "Using mmdebstrap..." green
     eatmydata mmdebstrap --keyring=/usr/share/keyrings/kali-archive-keyring.gpg --components="${components}" \
         --include="${debootstrap_base}" --arch "${architecture}" "${suite}" "${work_dir}" "$@"
     fi

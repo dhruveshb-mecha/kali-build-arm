@@ -82,7 +82,7 @@ fi
 
 # Basic packages third stage
 third_stage_pkgs="binutils ca-certificates console-common console-setup curl \
-git libterm-readline-gnu-perl locales wget"
+file git initramfs-tools libterm-readline-gnu-perl locales wget zstd"
 
 # Re4son packages
 re4son_pkgs="kalipi-bootloader kalipi-config kalipi-kernel kalipi-kernel-headers \
