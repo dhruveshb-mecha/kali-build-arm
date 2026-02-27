@@ -1,21 +1,16 @@
 #!/usr/bin/env bash
 #
-# Kali Linux ARM build-script for Mecha Comet (arm64)
+# Kali Linux ARM build-script for Mecha Comet (arm64) - SINGLE PARTITION VERSION
 #
 
 set -e
 
 # Workaround for mmdebstrap issues in some Docker environments
-# Switch to debootstrap which is more stable in restricted containers
 export FORCE_DEBOOTSTRAP=1
 
 # Hardware model
 hw_model=${hw_model:-"mecha-comet"}
-
-# Architecture
 architecture=${architecture:-"arm64"}
-
-# Desktop manager (xfce, gnome, i3, kde, lxde, mate, e17 or none)
 desktop=${desktop:-"xfce"}
 
 # Load default base_image configs
@@ -30,20 +25,21 @@ kernel_url="https://pub-a2f44c787cec4290833312e57fd59522.r2.dev/linux-image-6.12
 
 # Third stage enhancements
 cat <<EOF >> "${work_dir}"/third-stage
+status_stage3 'Set up locales'
+locale-gen en_US.UTF-8 || true
+update-locale LANG=en_US.UTF-8 || true
+
 status_stage3 'Download and install custom Mecha kernel'
 wget -q "${kernel_url}" -O /tmp/kernel.deb
 eatmydata dpkg -i /tmp/kernel.deb
 rm /tmp/kernel.deb
 
 status_stage3 'Copy DTBs to /boot'
-# The package installed DTBs to /usr/lib/linux-image-6.12.20+mecha+/freescale/
-# We copy them to /boot so U-Boot can find them according to standard patterns
+# We keep everything on the same partition, so /boot is just a directory
 mkdir -p /boot/freescale
 cp /usr/lib/linux-image-6.12.20+mecha+/freescale/*.dtb /boot/freescale/
-# Also copy to /boot directly if U-Boot expects them there
 cp /usr/lib/linux-image-6.12.20+mecha+/freescale/*.dtb /boot/
 
-# Ensure initramfs is updated for the new kernel
 status_stage3 'Update initramfs'
 update-initramfs -u -k 6.12.20+mecha+
 EOF
@@ -54,36 +50,60 @@ include third_stage
 # Clean system
 include clean_system
 
-# Calculate the space to create the image and create
-make_image
+# --- BEGIN SINGLE-PARTITION IMAGE CREATION (Userspace only) ---
+status "Starting Single-Partition Image Creation"
 
-# Create the disk partitions
-status "Create the disk partitions"
-# Using msdos partition table
-parted -s "${image_dir}/${image_name}.img" mklabel msdos
-parted -s "${image_dir}/${image_name}.img" mkpart primary fat32 1MiB "${bootsize}"MiB
-parted -s -a minimal "${image_dir}/${image_name}.img" mkpart primary "$fstype" "${bootsize}"MiB 100%
+# Generate FSTAB with a single entry
+root_uuid="44444444-4444-4444-8888-888888888888"
 
-# Set the partition variables
-make_loop
+cat <<EOF >"${work_dir}"/etc/fstab
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+proc            /proc           proc    defaults          0       0
+UUID=$root_uuid /               ext4    errors=remount-ro 0       1
+EOF
 
-# Create file systems
-mkfs_partitions
+# Create the filesystem image
+status "Creating raw rootfs image using mkfs.ext4 -d"
+# Calculate size needed (rootfs + free space)
+root_size_kb=$(du -sk "${work_dir}" | cut -f1)
+total_root_kb=$((root_size_kb + (free_space * 1024) + 102400)) # 100MB buffer
+truncate -s "${total_root_kb}K" "${base_dir}/rootfs.img"
+mkfs.ext4 -L ROOTFS -U "$root_uuid" -d "${work_dir}" "${base_dir}/rootfs.img"
 
-# Make fstab
-make_fstab
+# Assemble as a disk image with a partition table (optional but recommended for .img)
+status "Assembling final disk image: ${image_name}.img"
+image_file="${image_dir}/${image_name}.img"
+mkdir -p "${image_dir}"
 
-# Create the dirs for the partitions and mount them
-status "Create the dirs for the partitions and mount them"
-mkdir -p "${base_dir}"/root/
-mount "${rootp}" "${base_dir}"/root
-mkdir -p "${base_dir}"/root/boot
-mount "${bootp}" "${base_dir}"/root/boot
+# 1MiB offset for the first partition (classic MBR offset)
+offset_mib=1
+full_size_mib=$((offset_mib + (total_root_kb / 1024) + 2))
+truncate -s "${full_size_mib}M" "${image_file}"
 
-status "Rsyncing rootfs into image file"
-rsync -HPavz -q --exclude boot "${work_dir}"/ "${base_dir}"/root/
-rsync -rtx -q "${work_dir}"/boot/ "${base_dir}"/root/boot/
+# Create MBR Partition Table with one partition
+parted -s "${image_file}" mklabel msdos
+parted -s "${image_file}" mkpart primary ext4 "${offset_mib}MiB" 100%
+
+# Write the rootfs into the partition
+status "Writing rootfs into the disk image"
+dd if="${base_dir}/rootfs.img" of="${image_file}" bs=1M seek="${offset_mib}" conv=notrunc
 sync
 
-# Final cleanup and completion
-include finish_image
+# Finalize
+status "Image creation complete. Compressing..."
+cd "${image_dir}"
+shasum -a 256 "${image_name}.img" > "${image_name}.img.sha256sum"
+
+if [ "${compress}" = "xz" ]; then
+    status "Compressing file: ${image_name}.img"
+    xz -T0 "${image_name}.img"
+    shasum -a 256 "${image_name}.img.xz" > "${image_name}.img.xz.sha256sum"
+    img_final="${image_dir}/${image_name}.img.xz"
+else
+    img_final="${image_dir}/${image_name}.img"
+fi
+
+cd "${repo_dir}"
+log "Done! Your image is: ${img_final}" bold
+total_time $SECONDS
+exit 0

@@ -96,6 +96,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     kpartx \
     u-boot-tools \
     device-tree-compiler \
+    mtools \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
